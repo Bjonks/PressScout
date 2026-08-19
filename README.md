@@ -1,11 +1,11 @@
-# WPGopher
+# PressScout
 
-`WPGopher` checks links on an authenticated internal WordPress site. It logs in through `/wp-login.php` using `net/http` and a cookie jar, crawls same-origin HTML pages, checks external links without crawling them, and reports non-OK results.
+`PressScout` checks links on an authenticated internal WordPress site. It logs in through `/wp-login.php` using `net/http` and a cookie jar, crawls same-origin HTML pages, checks external links without crawling them, and reports non-OK results.
 
 ## Build
 
 ```bash
-go build ./cmd/wpgopher
+go build ./cmd/pressscout
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ Set the WordPress credentials in the environment:
 ```bash
 export WP_USER='username'
 export WP_PASS='password'
-./wpgopher --concurrency 15 --timeout 15s --json results.json https://wordpress.internal/
+./pressscout --concurrency 15 --timeout 15s --json results.json https://wordpress.internal/
 ```
 
 Flags:
@@ -31,13 +31,13 @@ The program first performs a `GET /wp-login.php`, then submits the credentials w
 For a public site, omit the credential variables and use:
 
 ```bash
-./wpgopher --no-auth https://example.com/
+./pressscout --no-auth https://example.com/
 ```
 
 To avoid following logout links while crawling an authenticated site:
 
 ```bash
-./wpgopher --exclude-keyword logout --exclude-keyword signout https://wordpress.internal/
+./pressscout --exclude-keyword logout --exclude-keyword signout https://wordpress.internal/
 ```
 
 Classifications are `OK`, `REDIRECT`, `BROKEN`, `FORBIDDEN`, `RATE_LIMITED`, `SERVER_ERROR`, `TIMEOUT`, and `NETWORK_ERROR`. Text output includes summary counts and all non-OK URLs with their discovery source pages.

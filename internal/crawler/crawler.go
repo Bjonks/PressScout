@@ -8,9 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"wpgopher/internal/checker"
-	"wpgopher/internal/model"
-	"wpgopher/internal/urlnorm"
+	"pressscout/internal/checker"
+	"pressscout/internal/model"
+	"pressscout/internal/urlnorm"
 )
 
 type Crawler struct {

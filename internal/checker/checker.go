@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"wpgopher/internal/model"
+	"pressscout/internal/model"
 )
 
 type Outcome struct {

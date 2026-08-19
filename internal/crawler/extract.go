@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"golang.org/x/net/html"
-	"wpgopher/internal/urlnorm"
+	"pressscout/internal/urlnorm"
 )
 
 type Link struct {

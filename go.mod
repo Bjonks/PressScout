@@ -1,4 +1,4 @@
-module wpgopher
+module pressscout
 
 go 1.22
 

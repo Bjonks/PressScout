@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"wpgopher/internal/model"
+	"pressscout/internal/model"
 )
 
 func TestPrintTextAndWriteJSON(t *testing.T) {

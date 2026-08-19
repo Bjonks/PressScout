@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"wpgopher/internal/auth"
-	"wpgopher/internal/checker"
-	"wpgopher/internal/crawler"
-	"wpgopher/internal/report"
-	"wpgopher/internal/urlnorm"
+	"pressscout/internal/auth"
+	"pressscout/internal/checker"
+	"pressscout/internal/crawler"
+	"pressscout/internal/report"
+	"pressscout/internal/urlnorm"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	flag.Var(&excludeKeywords, "exclude-keyword", "skip links containing this keyword in URL or anchor text (repeatable)")
 	flag.Parse()
 	if flag.NArg() != 1 {
-		fail("usage: wpgopher [--concurrency N] [--timeout DURATION] [--json FILE] [--no-auth] BASE_URL")
+		fail("usage: pressscout [--concurrency N] [--timeout DURATION] [--json FILE] [--no-auth] BASE_URL")
 	}
 	if *concurrency < 1 {
 		fail("--concurrency must be at least 1")

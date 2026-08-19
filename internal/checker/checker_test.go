@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"wpgopher/internal/model"
+	"pressscout/internal/model"
 )
 
 func TestCheckerClassifiesResponses(t *testing.T) {

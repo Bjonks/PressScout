@@ -8,8 +8,8 @@ import (
 	"sync"
 	"testing"
 
-	"wpgopher/internal/checker"
-	"wpgopher/internal/model"
+	"pressscout/internal/checker"
+	"pressscout/internal/model"
 )
 
 func TestCrawlerRecursesInternallyAndChecksExternalOnce(t *testing.T) {

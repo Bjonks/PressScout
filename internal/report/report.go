@@ -7,7 +7,7 @@ import (
 	"os"
 	"sort"
 
-	"wpgopher/internal/model"
+	"pressscout/internal/model"
 )
 
 type Summary struct {
