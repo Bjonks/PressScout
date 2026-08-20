@@ -16,6 +16,7 @@ import (
 	"pressscout/internal/crawler"
 	"pressscout/internal/report"
 	"pressscout/internal/urlnorm"
+	"pressscout/internal/wordpress"
 )
 
 func main() {
@@ -23,11 +24,12 @@ func main() {
 	timeout := flag.Duration("timeout", 15*time.Second, "HTTP request timeout")
 	jsonFile := flag.String("json", "", "write a JSON report to this file")
 	noAuth := flag.Bool("no-auth", false, "skip WordPress authentication for a public site")
+	crawlPosts := flag.Bool("crawl-posts", false, "discover WordPress posts through the REST API")
 	var excludeKeywords stringList
 	flag.Var(&excludeKeywords, "exclude-keyword", "skip links containing this keyword in URL or anchor text (repeatable)")
 	flag.Parse()
 	if flag.NArg() != 1 {
-		fail("usage: pressscout [--concurrency N] [--timeout DURATION] [--json FILE] [--no-auth] BASE_URL")
+		fail("usage: pressscout [--concurrency N] [--timeout DURATION] [--json FILE] [--no-auth] [--crawl-posts] BASE_URL")
 	}
 	if *concurrency < 1 {
 		fail("--concurrency must be at least 1")
@@ -54,7 +56,17 @@ func main() {
 	if err != nil {
 		fail(err.Error())
 	}
-	results, err := crawler.NewWithExcludeKeywords(checker.New(client), base, *concurrency, excludeKeywords).Crawl(ctx)
+	seeds := []crawler.Seed{{URL: base.String()}}
+	if *crawlPosts {
+		postSeeds, discoveryErr := wordpress.DiscoverPosts(ctx, client, base)
+		if discoveryErr != nil {
+			fail(discoveryErr.Error())
+		}
+		for _, post := range postSeeds {
+			seeds = append(seeds, crawler.Seed{URL: post.URL, Source: post.SourceURL})
+		}
+	}
+	results, err := crawler.NewWithExcludeKeywords(checker.New(client), base, *concurrency, excludeKeywords).CrawlSeeds(ctx, seeds)
 	if err != nil {
 		fail("crawl failed: " + err.Error())
 	}

@@ -24,6 +24,7 @@ Flags:
 - `--timeout`: per-request timeout; default `15s`.
 - `--json FILE`: write the complete report to `FILE` in addition to the concise stdout summary.
 - `--no-auth`: skip WordPress authentication for a public site. This is disabled by default.
+- `--crawl-posts`: enumerate standard WordPress posts through the REST API and crawl their permalinks.
 - `--exclude-keyword WORD`: skip discovered links whose URL or visible anchor text contains `WORD` (case-insensitive); repeat the flag for multiple keywords.
 
 The program first performs a `GET /wp-login.php`, then submits the credentials with `POST /wp-login.php`. It requires a WordPress logged-in cookie before crawling. Credentials are read only from `WP_USER` and `WP_PASS` and are never included in reports.
@@ -39,6 +40,14 @@ To avoid following logout links while crawling an authenticated site:
 ```bash
 ./pressscout --exclude-keyword logout --exclude-keyword signout https://wordpress.internal/
 ```
+
+To include posts that are not reachable through normal page links:
+
+```bash
+./pressscout --crawl-posts https://wordpress.internal/
+```
+
+Post discovery uses `/wp-json/wp/v2/posts` with pagination. It covers published, view-accessible standard posts; drafts, private posts, pages, and custom post types are not included yet. The base URL should be the WordPress site root.
 
 Classifications are `OK`, `REDIRECT`, `BROKEN`, `FORBIDDEN`, `RATE_LIMITED`, `SERVER_ERROR`, `TIMEOUT`, and `NETWORK_ERROR`. Text output includes summary counts and all non-OK URLs with their discovery source pages.
 

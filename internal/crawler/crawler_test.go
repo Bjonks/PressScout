@@ -86,3 +86,43 @@ func TestCrawlerExcludesKeywordsFromURLAndAnchorText(t *testing.T) {
 		t.Fatalf("results=%v counts=%v", results, counts)
 	}
 }
+
+func TestCrawlerSeedsUnlinkedPostAndMergesSources(t *testing.T) {
+	var mu sync.Mutex
+	counts := map[string]int{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		counts[r.URL.Path]++
+		mu.Unlock()
+		w.Header().Set("Content-Type", "text/html")
+		if r.URL.Path == "/post" {
+			w.Write([]byte(`<a href="/child">child</a>`))
+			return
+		}
+		w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+	base, _ := url.Parse(server.URL + "/")
+	postURL := server.URL + "/post"
+	results, err := New(checker.New(&http.Client{}), base, 2).CrawlSeeds(context.Background(), []Seed{
+		{URL: base.String()},
+		{URL: postURL, Source: server.URL + "/wp-json/wp/v2/posts?page=1"},
+		{URL: postURL, Source: server.URL + "/wp-json/wp/v2/posts?page=2"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if counts["/post"] != 1 || len(results) != 3 {
+		t.Fatalf("counts=%v results=%v", counts, results)
+	}
+	for _, result := range results {
+		if result.OriginalURL != postURL {
+			continue
+		}
+		if len(result.Sources) != 2 || result.Sources[0] >= result.Sources[1] {
+			t.Fatalf("post sources=%v", result.Sources)
+		}
+		return
+	}
+	t.Fatal("post result not found")
+}

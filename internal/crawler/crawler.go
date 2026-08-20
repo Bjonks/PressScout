@@ -20,6 +20,11 @@ type Crawler struct {
 	Exclude     []string
 }
 
+type Seed struct {
+	URL    string
+	Source string
+}
+
 func New(c *checker.Checker, base *url.URL, concurrency int) *Crawler {
 	return NewWithExcludeKeywords(c, base, concurrency, nil)
 }
@@ -48,6 +53,10 @@ type workerOutcome struct {
 }
 
 func (c *Crawler) Crawl(ctx context.Context) ([]model.Result, error) {
+	return c.CrawlSeeds(ctx, []Seed{{URL: c.Base.String()}})
+}
+
+func (c *Crawler) CrawlSeeds(ctx context.Context, seeds []Seed) ([]model.Result, error) {
 	jobs := make(chan job, c.Concurrency)
 	outcomes := make(chan workerOutcome, c.Concurrency)
 	var wg sync.WaitGroup
@@ -64,10 +73,35 @@ func (c *Crawler) Crawl(ctx context.Context) ([]model.Result, error) {
 	seen := make(map[string]bool)
 	sources := make(map[string]map[string]bool)
 	results := make(map[string]model.Result)
-	pending := []job{{URL: c.Base.String()}}
-	seen[c.Base.String()] = true
+	pending := make([]job, 0, len(seeds))
 	inFlight := 0
 	baseOrigin := origin(c.Base)
+
+	addSeed := func(seed Seed) {
+		u, err := urlnorm.Normalize(seed.URL, c.Base)
+		if err != nil || origin(u) != baseOrigin {
+			return
+		}
+		key := u.String()
+		if key != c.Base.String() && c.excluded(Link{URL: key}) {
+			return
+		}
+		if sources[key] == nil {
+			sources[key] = make(map[string]bool)
+		}
+		if seed.Source != "" {
+			sources[key][seed.Source] = true
+		}
+		if seen[key] {
+			return
+		}
+		seen[key] = true
+		pending = append(pending, job{URL: key})
+	}
+	addSeed(Seed{URL: c.Base.String()})
+	for _, seed := range seeds {
+		addSeed(seed)
+	}
 
 	enqueue := func(raw, source string) {
 		u, err := urlnorm.Normalize(raw, c.Base)
